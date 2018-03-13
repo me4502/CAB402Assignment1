@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "FSharpPureSegmenter": {
+      "commandName": "Project",
+      "commandLineArgs": "..\\TestImages\\L15-3792E-1717N-Q4.tif"
+    }
+  }
+}
