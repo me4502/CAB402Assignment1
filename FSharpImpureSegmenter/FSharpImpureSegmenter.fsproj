@@ -13,4 +13,8 @@
     <PackageReference Include="BitMiracle.LibTiff.NET" Version="2.4.584.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Update="FSharp.Core" Version="4.3.4" />
+  </ItemGroup>
+
 </Project>

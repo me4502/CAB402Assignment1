@@ -17,4 +17,10 @@
     <PackageReference Include="BitMiracle.LibTiff.NET" Version="2.4.584.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="mscorlib">
+      <HintPath>C:\Program Files\dotnet\sdk\NuGetFallbackFolder\microsoft.netcore.app\2.0.0\ref\netcoreapp2.0\mscorlib.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
 </Project>
