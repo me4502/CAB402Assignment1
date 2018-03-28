@@ -1,23 +1,25 @@
 ﻿module SegmentationModule
 
 open SegmentModule
+open TiffModule
 
 // Maps segments to their immediate parent segment that they are contained within (if any) 
 type Segmentation = Map<Segment, Segment>
 
 // Find the largest/top level segment that the given segment is a part of (based on the current segmentation)
 let rec findRoot (segmentation: Segmentation) segment : Segment =
-    raise (System.NotImplementedException())
-    // Fixme: add implementation here
+    match segmentation.TryFind(segment) with
+    | Some(parentSegment: Segment) -> findRoot segmentation parentSegment
+    | None -> segment
 
 
 // Initially, every pixel/coordinate in the image is a separate Segment
 // Note: this is a higher order function which given an image, 
 // returns a function which maps each coordinate to its corresponding (initial) Segment (of kind Pixel)
 let createPixelMap (image:TiffModule.Image) : (Coordinate -> Segment) =
-    raise (System.NotImplementedException())
-    // Fixme: add implementation here
-
+    let createPixel (coordinate: Coordinate) : Segment =
+        Pixel(coordinate, getColourBands image coordinate)
+    createPixel
 
 // Find the neighbouring segments of the given segment (assuming we are only segmenting the top corner of the image of size 2^N x 2^N)
 // Note: this is a higher order function which given a pixelMap function and a size N, 
