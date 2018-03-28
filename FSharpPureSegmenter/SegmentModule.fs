@@ -11,6 +11,14 @@ type Segment =
 // return a list of the standard deviations of the pixel colours in the given segment
 // the list contains one entry for each colour band, typically: [red, green and blue]
 let stddev (segment: Segment) : float list =
+    let square x = x * x
+    let stddevPixel seg = 
+        let mean = seg |> List.average
+        let variance = seg |> List.averageBy (fun x -> square(x - mean))
+        sqrt(variance)
+
+    
+
     raise (System.NotImplementedException())
     // Fixme: add implementation here
 
