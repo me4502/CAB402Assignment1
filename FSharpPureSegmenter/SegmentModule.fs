@@ -42,5 +42,20 @@ let stddev (segment: Segment) : float list =
 // equal to the standard deviation of the combined the segments minus the sum of the standard deviations of the individual segments, 
 // weighted by their respective sizes and summed over all colour bands
 let mergeCost segment1 segment2 : float = 
-    raise (System.NotImplementedException())
-    // Fixme: add implementation here
+    let segment3 = Parent(segment1, segment2)
+
+    let segment1StdDev = stddev segment1 |> List.sum
+    let segment2StdDev = stddev segment2 |> List.sum
+    let segment3StdDev = stddev segment3 |> List.sum
+
+    let segment1Size = float(getPixels(segment1).Length)
+    let segment2Size = float(getPixels(segment2).Length)
+    let segment3Size = float(getPixels(segment3).Length)
+
+    let weightedStdDev1 = segment1StdDev * segment1Size
+    let weightedStdDev2 = segment2StdDev * segment2Size
+
+    let combinedWeighted = weightedStdDev1 + weightedStdDev2
+    let combinedStdDev = (segment3StdDev * segment3Size) - combinedWeighted
+
+    combinedStdDev
