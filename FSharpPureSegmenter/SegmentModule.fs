@@ -7,29 +7,36 @@ type Segment =
     | Pixel of Coordinate * Colour
     | Parent of Segment * Segment 
 
-let averageLists (lists: float list * float list) : float list =
-    raise (System.NotImplementedException())
+let square (x: float) : float = 
+    x * x
 
-let rec stddev_rec (segment: Segment) : float list = 
-    match segment with
-        Parent(parent1, parent2) -> averageLists(stddev_rec(parent1), stddev_rec(parent2))
+// Copied from http://stackoverflow.com/questions/3016139/help-me-to-explain-the-f-matrix-transpose-function
+let rec transpose = function
+    | (_::_)::_ as M -> 
+        List.map List.head M :: transpose (List.map List.tail M)
+    | _ -> []
 
-    // let square x = x * x
-    // let stddevPixel seg = 
-    //    let mean = seg |> List.average
-    //    let variance = seg |> List.averageBy (fun x -> square(x - mean))
-    //    sqrt(variance)
-
-    // let averageTogether seg = 
-    //    List.average |> seg
-
-
+let rec getPixels (segment: Segment) : float list list =
+    seq {
+        match segment with
+        | Parent(parent1, parent2) -> 
+            yield! getPixels parent1
+            yield! getPixels parent2
+        | Pixel(coordinate, colour) -> yield (colour |> List.map float)
+    } |> Seq.toList    
 
 // return a list of the standard deviations of the pixel colours in the given segment
 // the list contains one entry for each colour band, typically: [red, green and blue]
 let stddev (segment: Segment) : float list =
-    stddev_rec(segment)
+    let pixels = getPixels segment
+    let transposedColours = transpose pixels
 
+    let calculateStdDev input =
+        let mean = input |> List.average
+        let variance = input |> List.averageBy (fun x -> square(x - mean))
+        sqrt(variance)
+
+    transposedColours |> List.map calculateStdDev
 
 // determine the cost of merging the given segments: 
 // equal to the standard deviation of the combined the segments minus the sum of the standard deviations of the individual segments, 
