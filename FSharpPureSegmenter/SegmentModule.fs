@@ -16,19 +16,41 @@ let rec transpose = function
         List.map List.head M :: transpose (List.map List.tail M)
     | _ -> []
 
-let rec getPixels (segment: Segment) : float list list =
+
+let rec getSegments (segment: Segment) : Segment list =
     seq {
         match segment with
         | Parent(parent1, parent2) -> 
-            yield! getPixels parent1
-            yield! getPixels parent2
+            yield! getSegments parent1
+            yield! getSegments parent2
+        | Pixel(coordinate, colour) -> yield segment
+    } |> Seq.toList    
+
+
+let rec getColours (segment: Segment) : float list list =
+    seq {
+        match segment with
+        | Parent(parent1, parent2) -> 
+            yield! getColours parent1
+            yield! getColours parent2
         | Pixel(coordinate, colour) -> yield (colour |> List.map float)
     } |> Seq.toList    
+
+
+let rec getCoordinates (segment: Segment) : (int * int) list =
+    seq {
+        match segment with
+        | Parent(parent1, parent2) -> 
+            yield! getCoordinates parent1
+            yield! getCoordinates parent2
+        | Pixel(coordinate, colour) -> yield coordinate
+    } |> Seq.toList    
+
 
 // return a list of the standard deviations of the pixel colours in the given segment
 // the list contains one entry for each colour band, typically: [red, green and blue]
 let stddev (segment: Segment) : float list =
-    let pixels = getPixels segment
+    let pixels = getColours segment
     let transposedColours = transpose pixels
 
     let calculateStdDev input =
@@ -48,9 +70,9 @@ let mergeCost segment1 segment2 : float =
     let segment2StdDev = stddev segment2 |> List.sum
     let segment3StdDev = stddev segment3 |> List.sum
 
-    let segment1Size = float(getPixels(segment1).Length)
-    let segment2Size = float(getPixels(segment2).Length)
-    let segment3Size = float(getPixels(segment3).Length)
+    let segment1Size = float(getColours(segment1).Length)
+    let segment2Size = float(getColours(segment2).Length)
+    let segment3Size = float(getColours(segment3).Length)
 
     let weightedStdDev1 = segment1StdDev * segment1Size
     let weightedStdDev2 = segment2StdDev * segment2Size

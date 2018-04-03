@@ -12,6 +12,12 @@ let rec findRoot (segmentation: Segmentation) segment : Segment =
     | Some(parentSegment: Segment) -> findRoot segmentation parentSegment
     | None -> segment
 
+let rec getTree (segmentation: Segmentation) segment : Segment list =
+    seq {
+        match segmentation.TryFind(segment) with
+        | Some(parentSegment: Segment) -> yield! getTree segmentation parentSegment
+        | None -> yield segment
+    } |> Seq.toList
 
 // Initially, every pixel/coordinate in the image is a separate Segment
 // Note: this is a higher order function which given an image, 
@@ -25,9 +31,25 @@ let createPixelMap (image:TiffModule.Image) : (Coordinate -> Segment) =
 // Note: this is a higher order function which given a pixelMap function and a size N, 
 // returns a function which given a current segmentation, returns the set of Segments which are neighbours of a given segment
 let createNeighboursFunction (pixelMap:Coordinate->Segment) (N:int) : (Segmentation -> Segment -> Set<Segment>) =
-    raise (System.NotImplementedException())
-    // Fixme: add implementation here
+    let neighboursFunctionOuter (segmentation:Segmentation): Segment -> Set<Segment> =
+        let neighboursFunction (segment:Segment) : Set<Segment> =
+            let segments = [
+                for x = 0 to N do
+                    for y = 0 to N do
+                        yield pixelMap(x, y)
+            ]
+            let boxedRoot x = findRoot segmentation x
+            let pixels = segments
+                        |> List.map boxedRoot
+                        |> List.filter(fun x -> 
+                                        x <> segment
+                                    )
+                        |> Set.ofList
+            pixels
+            
 
+        neighboursFunction
+    neighboursFunctionOuter
 
 // The following are also higher order functions, which given some inputs, return a function which ...
 
