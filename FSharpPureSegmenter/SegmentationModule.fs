@@ -78,8 +78,23 @@ let createBestNeighbourFunction (neighbours:Segmentation->Segment->Set<Segment>)
 // if such a mutally optimal neighbour exists then merge them,
 // otherwise, choose one of segmentA's best neighbours (if any) and try to grow it instead (gradient descent)
 let createTryGrowOneSegmentFunction (bestNeighbours:Segmentation->Segment->Set<Segment>) (pixelMap:Coordinate->Segment) : (Segmentation->Coordinate->Segmentation) =
-    raise (System.NotImplementedException())
-    // Fixme: add implementation here
+    let tryGrowOneSegmentFunctionOuter (segmentation:Segmentation) : Coordinate -> Segmentation =
+        let neighboursFunction = bestNeighbours segmentation
+        let rec tryGrowOneSegmentFunction (coordinate: Coordinate) : Segmentation =
+            let pixel = pixelMap coordinate
+            let rootSegment = findRoot segmentation pixel
+            let neighbours = neighboursFunction rootSegment
+            if Set.isEmpty neighbours then
+                segmentation
+            else
+                for bestNeighbour in bestNeighbours
+                    let bestNeighbourNeighbours = neighboursFunction bestNeighbour
+                    if Set.isEmpty bestNeighbourNeighbours or Set.contains bestNeighbourNeighbours rootSegment then
+                        tryGrowOneSegmentFunction bestNeighbour
+                    else
+                        
+        tryGrowOneSegmentFunction
+    tryGrowOneSegmentFunctionOuter
 
 
 // Try to grow the segments corresponding to every pixel on the image in turn 
