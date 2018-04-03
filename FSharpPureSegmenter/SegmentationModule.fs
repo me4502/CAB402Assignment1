@@ -47,7 +47,6 @@ let createNeighboursFunction (pixelMap:Coordinate->Segment) (N:int) : (Segmentat
                         |> Set.ofList
             pixels
             
-
         neighboursFunction
     neighboursFunctionOuter
 
@@ -57,9 +56,21 @@ let createNeighboursFunction (pixelMap:Coordinate->Segment) (N:int) : (Segmentat
  // Find the neighbour(s) of the given segment that has the (equal) best merge cost
  // (exclude neighbours if their merge cost is greater than the threshold)
 let createBestNeighbourFunction (neighbours:Segmentation->Segment->Set<Segment>) (threshold:float) : (Segmentation->Segment->Set<Segment>) =
-    raise (System.NotImplementedException())
-    // Fixme: add implementation here
-
+    let bestNeighbourFunctionOuter (segmentation:Segmentation) : Segment -> Set<Segment> =
+        let neighboursFunction = neighbours segmentation
+        let bestNeighbourFunction (segment:Segment) : Set<Segment> =
+            let neighboursSet = neighboursFunction segment
+            let getCost x = mergeCost x segment
+            let validCost x = getCost x < threshold
+            let validNeighboursFunction = Seq.filter validCost
+            let validNeighbours = validNeighboursFunction neighboursSet
+            let bestNeighbour = Seq.minBy getCost
+            if Seq.isEmpty validNeighbours then 
+                Set.ofList [] 
+            else 
+                Set.ofList [bestNeighbour(validNeighbours)]
+        bestNeighbourFunction
+    bestNeighbourFunctionOuter
 
 // Try to find a neighbouring segmentB such that:
 //     1) segmentB is one of the best neighbours of segment A, and 
