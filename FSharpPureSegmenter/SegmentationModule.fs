@@ -41,9 +41,7 @@ let createNeighboursFunction (pixelMap:Coordinate->Segment) (N:int) : (Segmentat
             let boxedRoot x = findRoot segmentation x
             let pixels = segments
                         |> List.map boxedRoot
-                        |> List.filter(fun x -> 
-                                        x <> segment
-                                    )
+                        |> List.filter(fun x -> x <> segment)
                         |> Set.ofList
             pixels
             
@@ -80,37 +78,57 @@ let createBestNeighbourFunction (neighbours:Segmentation->Segment->Set<Segment>)
 // if such a mutally optimal neighbour exists then merge them,
 // otherwise, choose one of segmentA's best neighbours (if any) and try to grow it instead (gradient descent)
 let createTryGrowOneSegmentFunction (bestNeighbours:Segmentation->Segment->Set<Segment>) (pixelMap:Coordinate->Segment) : (Segmentation->Coordinate->Segmentation) =
-    //let tryGrowOneSegmentFunctionOuter (segmentation:Segmentation) : Coordinate -> Segmentation =
-    //    let neighboursFunction = bestNeighbours segmentation
-    //    let rec tryGrowOneSegmentFunction (coordinate: Coordinate) : Segmentation =
-    //        let pixel = pixelMap coordinate
-    //        let rootSegment = findRoot segmentation pixel
-    //        let neighbours = neighboursFunction rootSegment
-    //        if Set.isEmpty neighbours then
-    //            segmentation
-    //        else
-    //            for bestNeighbour in bestNeighbours
-    //                let bestNeighbourNeighbours = neighboursFunction bestNeighbour
-    //                if Set.isEmpty bestNeighbourNeighbours or Set.contains bestNeighbourNeighbours rootSegment then
-    //                    tryGrowOneSegmentFunction bestNeighbour
-    //                else
-    //                    
-    //    tryGrowOneSegmentFunction
-    //tryGrowOneSegmentFunctionOuter
-    raise (System.NotImplementedException())
+    let tryGrowOneSegmentFunctionOuter (segmentation:Segmentation) : Coordinate -> Segmentation =
+        let neighboursFunction = bestNeighbours segmentation
+        let rec tryGrowOneSegmentFunction (coordinate: Coordinate) : Segmentation =
+            let pixel = pixelMap coordinate
+            let rootSegment = findRoot segmentation pixel
+            let neighbours = neighboursFunction rootSegment
+            if Set.isEmpty neighbours then
+                segmentation
+            else
+                let isMutualBestNeighbour x =
+                    let bestNeighbourNeighbours = neighboursFunction x
+                    Set.contains rootSegment bestNeighbourNeighbours
+                let mutualBestNeighbour =  neighbours |> Set.filter isMutualBestNeighbour
+                if Set.isEmpty mutualBestNeighbour then
+                    let getCoordinate x =
+                        let coordinates = SegmentModule.getCoordinates (Seq.head x)
+                        Seq.head coordinates
+                    tryGrowOneSegmentFunction (getCoordinate neighbours)
+                else
+                    let chosenMutualNeighbour = Seq.head mutualBestNeighbour
+                    let updatedSegmentation = segmentation.Add(rootSegment, Parent(rootSegment, chosenMutualNeighbour))
+                                                        .Add(chosenMutualNeighbour, Parent(rootSegment, chosenMutualNeighbour))
+                    updatedSegmentation
+        tryGrowOneSegmentFunction
+    tryGrowOneSegmentFunctionOuter
 
 
 // Try to grow the segments corresponding to every pixel on the image in turn 
 // (considering pixel coordinates in special dither order)
 let createTryGrowAllCoordinatesFunction (tryGrowPixel:Segmentation->Coordinate->Segmentation) (N:int) : (Segmentation->Segmentation) =
-    raise (System.NotImplementedException())
-    // Fixme: add implementation here
-
+    let tryGrowAllCoordinates (segmentation: Segmentation) : Segmentation =
+        let growFunction = tryGrowPixel segmentation
+        let coordinates = DitherModule.coordinates N
+        let coordinateRetrieval x = Seq.item x coordinates
+        let rec tryGrowNextCoordinate (segmentation: Segmentation) (i:int) : Segmentation =
+            if i >= Seq.length coordinates then
+                segmentation
+            else
+                tryGrowNextCoordinate (growFunction (coordinateRetrieval i)) (i + 1)
+        tryGrowNextCoordinate segmentation 0
+    tryGrowAllCoordinates
 
 // Keep growing segments as above until no further merging is possible
 let createGrowUntilNoChangeFunction (tryGrowAllCoordinates:Segmentation->Segmentation) : (Segmentation->Segmentation) =
-    raise (System.NotImplementedException())
-    // Fixme: add implementation here
+    let rec growUntilNoChange (segmentation:Segmentation) : Segmentation =
+        let changedSegmentation = tryGrowAllCoordinates segmentation
+        if changedSegmentation = segmentation then
+            changedSegmentation
+        else
+            growUntilNoChange changedSegmentation
+    growUntilNoChange
 
 
 // Segment the given image based on the given merge cost threshold, but only for the top left corner of the image of size (2^N x 2^N)
