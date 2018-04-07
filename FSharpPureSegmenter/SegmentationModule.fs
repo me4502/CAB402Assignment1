@@ -109,15 +109,9 @@ let createTryGrowOneSegmentFunction (bestNeighbours:Segmentation->Segment->Set<S
 // (considering pixel coordinates in special dither order)
 let createTryGrowAllCoordinatesFunction (tryGrowPixel:Segmentation->Coordinate->Segmentation) (N:int) : (Segmentation->Segmentation) =
     let tryGrowAllCoordinates (segmentation: Segmentation) : Segmentation =
-        let growFunction = tryGrowPixel segmentation
         let coordinates = DitherModule.coordinates N
-        let coordinateRetrieval x = Seq.item x coordinates
-        let rec tryGrowNextCoordinate (segmentation: Segmentation) (i:int) : Segmentation =
-            if i >= Seq.length coordinates then
-                segmentation
-            else
-                tryGrowNextCoordinate (growFunction (coordinateRetrieval i)) (i + 1)
-        tryGrowNextCoordinate segmentation 0
+        let grownSegmentation = List.fold (fun acc coordinate -> tryGrowPixel acc coordinate) segmentation (List.ofSeq coordinates)
+        grownSegmentation
     tryGrowAllCoordinates
 
 // Keep growing segments as above until no further merging is possible
