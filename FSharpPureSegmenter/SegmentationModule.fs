@@ -27,17 +27,22 @@ let createPixelMap (image:TiffModule.Image) : (Coordinate -> Segment) =
         Pixel(coordinate, getColourBands image coordinate)
     createPixel
 
+let neighbourPixels (coordinates:Coordinate list) (N:int) : (Coordinate list) =
+    let foundPixels = List.map (fun (x,y) -> [(x-1,y);(x+1,y);(x,y-1);(x,y+1)]) coordinates
+                        |> List.concat 
+                        |> List.filter (fun (x,y) -> x <= N && y <= N && x >= 0 && y >= 0)
+                        |> List.filter (fun coord -> not (List.contains coord coordinates))
+                        |> List.distinct
+
+    foundPixels
+
 // Find the neighbouring segments of the given segment (assuming we are only segmenting the top corner of the image of size 2^N x 2^N)
 // Note: this is a higher order function which given a pixelMap function and a size N, 
 // returns a function which given a current segmentation, returns the set of Segments which are neighbours of a given segment
 let createNeighboursFunction (pixelMap:Coordinate->Segment) (N:int) : (Segmentation -> Segment -> Set<Segment>) =
     let neighboursFunctionOuter (segmentation:Segmentation): Segment -> Set<Segment> =
         let neighboursFunction (segment:Segment) : Set<Segment> =
-            let segments = [
-                for x = 0 to N do
-                    for y = 0 to N do
-                        yield pixelMap(x, y)
-            ]
+            let segments = (neighbourPixels (SegmentModule.getCoordinates segment) N) |> List.map pixelMap
             let boxedRoot x = findRoot segmentation x
             let pixels = segments
                         |> List.map boxedRoot
@@ -127,5 +132,13 @@ let createGrowUntilNoChangeFunction (tryGrowAllCoordinates:Segmentation->Segment
 
 // Segment the given image based on the given merge cost threshold, but only for the top left corner of the image of size (2^N x 2^N)
 let segment (image:TiffModule.Image) (N: int) (threshold:float)  : (Coordinate -> Segment) =
-    raise (System.NotImplementedException())
-    // Fixme: use the functions above to help implement this function
+    let segmentation = Map.empty
+    let pixelMap = createPixelMap image
+    let neighbourFunction = createNeighboursFunction pixelMap N
+    let bestNeighboursFunction = createBestNeighbourFunction neighbourFunction threshold
+    let tryGrowOneSegmentFunction = createTryGrowOneSegmentFunction bestNeighboursFunction pixelMap
+    let tryGrowAllCoordinatesFunction = createTryGrowAllCoordinatesFunction tryGrowOneSegmentFunction N
+    let growUntilNoChangeFunction = createGrowUntilNoChangeFunction tryGrowAllCoordinatesFunction
+    let segmentFunction (coordinate:Coordinate) : Segment =
+        findRoot (growUntilNoChangeFunction segmentation) (pixelMap coordinate)
+    segmentFunction
