@@ -30,7 +30,7 @@ let createPixelMap (image:TiffModule.Image) : (Coordinate -> Segment) =
 let neighbourPixels (coordinates:Coordinate list) (N:int) : (Coordinate list) =
     let foundPixels = List.map (fun (x,y) -> [(x-1,y);(x+1,y);(x,y-1);(x,y+1)]) coordinates
                         |> List.concat 
-                        |> List.filter (fun (x,y) -> x <= N && y <= N && x >= 0 && y >= 0)
+                        |> List.filter (fun (x,y) -> x < (pown 2 N) && y < (pown 2 N) && x >= 0 && y >= 0)
                         |> List.filter (fun coord -> not (List.contains coord coordinates))
                         |> List.distinct
 

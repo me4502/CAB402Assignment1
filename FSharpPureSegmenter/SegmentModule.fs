@@ -37,7 +37,7 @@ let rec getColours (segment: Segment) : float list list =
     } |> Seq.toList    
 
 
-let rec getCoordinates (segment: Segment) : (int * int) list =
+let rec getCoordinates (segment: Segment) : Coordinate list =
     seq {
         match segment with
         | Parent(parent1, parent2) -> 
