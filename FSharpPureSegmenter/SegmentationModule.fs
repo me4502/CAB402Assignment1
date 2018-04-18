@@ -27,29 +27,23 @@ let createPixelMap (image:TiffModule.Image) : (Coordinate -> Segment) =
     createPixel
 
 let neighbourPixels (coordinates:Coordinate list) (N:int) : (Coordinate list) =
-    let foundPixels = List.map (fun (x,y) -> [(x-1,y);(x+1,y);(x,y-1);(x,y+1)]) coordinates
-                        |> List.concat 
-                        |> List.filter (fun (x,y) -> x < (pown 2 N) && y < (pown 2 N) && x >= 0 && y >= 0)
-                        |> List.filter (fun coord -> not (List.contains coord coordinates))
-                        |> List.distinct
-
-    foundPixels
+    List.map (fun (x,y) -> [(x-1,y);(x+1,y);(x,y-1);(x,y+1)]) coordinates
+    |> List.concat 
+    |> List.filter (fun (x,y) -> x < (pown 2 N) && y < (pown 2 N) && x >= 0 && y >= 0)
+    |> List.filter (fun coord -> not (List.contains coord coordinates))
+    |> List.distinct
 
 // Find the neighbouring segments of the given segment (assuming we are only segmenting the top corner of the image of size 2^N x 2^N)
 // Note: this is a higher order function which given a pixelMap function and a size N, 
 // returns a function which given a current segmentation, returns the set of Segments which are neighbours of a given segment
 let createNeighboursFunction (pixelMap:Coordinate->Segment) (N:int) : (Segmentation -> Segment -> Set<Segment>) =
-    let neighboursFunctionOuter segmentation =
-        let neighboursFunction segment =
-            let segments = (neighbourPixels (SegmentModule.getCoordinates segment) N) |> List.map pixelMap
-            let boxedRoot x = findRoot segmentation x
-            let pixels = segments
-                        |> List.map boxedRoot
-                        |> List.filter(fun x -> x <> segment)
-                        |> Set.ofList
-            pixels
-            
-        neighboursFunction
+    let neighboursFunctionOuter segmentation segment =
+        let segments = (neighbourPixels (SegmentModule.getCoordinates segment) N) |> List.map pixelMap
+        let boxedRoot x = findRoot segmentation x
+        segments
+        |> List.map boxedRoot
+        |> List.filter(fun x -> x <> segment)
+        |> Set.ofList
     neighboursFunctionOuter
 
 // The following are also higher order functions, which given some inputs, return a function which ...
