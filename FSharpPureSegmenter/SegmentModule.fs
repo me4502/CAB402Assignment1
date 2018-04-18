@@ -66,13 +66,17 @@ let stddev (segment: Segment) : float list =
 let mergeCost segment1 segment2 : float = 
     let segment3 = Parent(segment1, segment2)
 
-    let segment1StdDev = stddev segment1 |> List.sum
-    let segment2StdDev = stddev segment2 |> List.sum
-    let segment3StdDev = stddev segment3 |> List.sum
+    let getSummedStdDev = stddev >> List.sum
 
-    let segment1Size = float(getColours(segment1).Length)
-    let segment2Size = float(getColours(segment2).Length)
-    let segment3Size = float(getColours(segment3).Length)
+    let segment1StdDev = getSummedStdDev segment1
+    let segment2StdDev = getSummedStdDev segment2
+    let segment3StdDev = getSummedStdDev segment3
+
+    let getSegmentSize = getColours >> List.length >> float
+
+    let segment1Size = getSegmentSize segment1
+    let segment2Size = getSegmentSize segment2
+    let segment3Size = getSegmentSize segment3
 
     let weightedStdDev1 = segment1StdDev * segment1Size
     let weightedStdDev2 = segment2StdDev * segment2Size
