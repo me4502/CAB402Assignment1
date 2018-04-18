@@ -64,24 +64,10 @@ let stddev (segment: Segment) : float list =
 // equal to the standard deviation of the combined the segments minus the sum of the standard deviations of the individual segments, 
 // weighted by their respective sizes and summed over all colour bands
 let mergeCost segment1 segment2 : float = 
-    let segment3 = Parent(segment1, segment2)
-
     let getSummedStdDev = stddev >> List.sum
-
-    let segment1StdDev = getSummedStdDev segment1
-    let segment2StdDev = getSummedStdDev segment2
-    let segment3StdDev = getSummedStdDev segment3
-
     let getSegmentSize = getColours >> List.length >> float
-
-    let segment1Size = getSegmentSize segment1
-    let segment2Size = getSegmentSize segment2
-    let segment3Size = getSegmentSize segment3
-
-    let weightedStdDev1 = segment1StdDev * segment1Size
-    let weightedStdDev2 = segment2StdDev * segment2Size
-
-    let combinedWeighted = weightedStdDev1 + weightedStdDev2
-    let combinedStdDev = (segment3StdDev * segment3Size) - combinedWeighted
-
-    combinedStdDev
+    let getWeightedStdDev segment = (getSummedStdDev segment) * (getSegmentSize segment)
+    let getCombinedWeighted seg1 seg2 = getWeightedStdDev seg1 + getWeightedStdDev seg2
+    
+    let segment3 = Parent(segment1, segment2)
+    (getWeightedStdDev segment3) - (getCombinedWeighted segment1 segment2)
