@@ -64,7 +64,7 @@ let createBestNeighbourFunction (neighbours:Segmentation->Segment->Set<Segment>)
         let bestNeighbourFunction (segment:Segment) : Set<Segment> =
             let neighboursSet = neighboursFunction segment
             let getCost x = mergeCost x segment
-            let validCost x = getCost x < threshold
+            let validCost x = getCost x <= threshold
             let validNeighboursFunction = Seq.filter validCost
             let validNeighbours = validNeighboursFunction neighboursSet
             if Seq.isEmpty validNeighbours then
