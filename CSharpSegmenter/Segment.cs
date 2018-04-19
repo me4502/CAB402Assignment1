@@ -5,7 +5,7 @@ using System.Text;
 
 namespace CSharpSegmenter
 {
-    abstract class Segment
+    public abstract class Segment
     {
         public List<Pixel> getContainedPixels()
         {

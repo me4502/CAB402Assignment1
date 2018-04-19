@@ -2,8 +2,6 @@
 
 namespace CSharpSegmenter
 { 
-    public delegate object Segmentation(int x, int y);
-
     public class TiffImage
     {
         private int width, height;
@@ -84,7 +82,7 @@ namespace CSharpSegmenter
         }
 
         // draw the (top left corner of the) original image but with the segment boundaries overlayed in blue
-        public void overlaySegmentation(string filename, int N, Segmentation segmentation)
+        public void overlaySegmentation(string filename, int N, Segmenter segmenter)
         {
             var newImage = new TiffImage(1 << N, 1 << N);
 
@@ -93,11 +91,11 @@ namespace CSharpSegmenter
             for (var y = 0; y < newImage.height; y++)
                 for (var x = 0; x < newImage.width; x++)
                 {
-                    var a = segmentation(x, y);
-                    var b = segmentation(x - 1, y);
-                    var c = segmentation(x, y - 1);
-                    if (x == newImage.width - 1 || x == 0 || !segmentation(x, y).Equals(segmentation(x - 1, y)) ||
-                        y == newImage.height - 1 || y == 0 || !segmentation(x, y).Equals(segmentation(x, y - 1)))
+                    var a = segmenter.Segment(new Coordinate(x, y));
+                    var b = segmenter.Segment(new Coordinate(x - 1, y));
+                    var c = segmenter.Segment(new Coordinate(x, y - 1));
+                    if (x == newImage.width - 1 || x == 0 || !segmenter.Segment(new Coordinate(x, y)).Equals(segmenter.Segment(new Coordinate(x - 1, y))) ||
+                        y == newImage.height - 1 || y == 0 || !segmenter.Segment(new Coordinate(x, y)).Equals(segmenter.Segment(new Coordinate(x, y - 1))))
                         newImage.setColour(x, y, BLUE);
                     else
                         newImage.setColour(x, y, getColour(x, y));

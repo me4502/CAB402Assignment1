@@ -4,7 +4,7 @@ using System.Text;
 
 namespace CSharpSegmenter
 {
-    class Coordinate
+    public class Coordinate
     {
         public int X { get; }
         public int Y { get; }

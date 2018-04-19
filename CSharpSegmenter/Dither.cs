@@ -39,7 +39,7 @@ namespace CSharpSegmenter
             return r;
         }
         // returns the coordinates of all pixels in the image in special dither order
-        static public IEnumerable<Tuple<int,int>> coordinates(int N)
+        static public IEnumerable<Coordinate> coordinates(int N)
         {
             var width = 1 << N;
             var height = 1 << N;
@@ -49,7 +49,7 @@ namespace CSharpSegmenter
                 var r = reverseBits(i, 2 * N);
                 var x = oddBits(r);
                 var y = x ^ evenBits(r);
-                yield return new Tuple<int,int>(x, y);
+                yield return new Coordinate(x, y);
             }
         }
     }

@@ -4,7 +4,7 @@ using System.Text;
 
 namespace CSharpSegmenter
 {
-    class Pixel : Segment
+    public class Pixel : Segment
     {
         public Coordinate Coords { get; }
         public byte[] Colour { get; }
