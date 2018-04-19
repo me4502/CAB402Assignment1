@@ -7,27 +7,33 @@ namespace CSharpSegmenter
 {
     public abstract class Segment
     {
+        private List<Pixel> cachedContainedPixels = null;
+
         public List<Pixel> getContainedPixels()
         {
-            var output = new List<Pixel>();
-            var searchQueue = new Queue<Segment>();
-            searchQueue.Enqueue(this);
-            while (searchQueue.Count > 0)
+            if (cachedContainedPixels == null)
             {
-                var searchSegment = searchQueue.Dequeue();
-                if (searchSegment is Parent)
+                var output = new List<Pixel>();
+                var searchQueue = new Queue<Segment>();
+                searchQueue.Enqueue(this);
+                while (searchQueue.Count > 0)
                 {
-                    foreach (var child in (searchSegment as Parent).GetChildren())
+                    var searchSegment = searchQueue.Dequeue();
+                    if (searchSegment is Parent)
                     {
-                        searchQueue.Enqueue(child);
+                        foreach (var child in (searchSegment as Parent).GetChildren())
+                        {
+                            searchQueue.Enqueue(child);
+                        }
+                    }
+                    else
+                    {
+                        output.Add(searchSegment as Pixel);
                     }
                 }
-                else
-                {
-                    output.Add(searchSegment as Pixel);
-                }
+                cachedContainedPixels = output;
             }
-            return output;
+            return cachedContainedPixels;
         }
 
         public List<byte[]> GetContainedColours()
@@ -56,7 +62,7 @@ namespace CSharpSegmenter
                 }
 
                 float mean = values.Average();
-                double varianceValue = values.Select(x => Math.Pow(x - mean, 2)).Sum();
+                double varianceValue = values.Select(x => Math.Pow(x - mean, 2)).Average();
                 output[i] = (float) Math.Sqrt(varianceValue);
             }
 

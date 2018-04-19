@@ -28,5 +28,22 @@ namespace CSharpSegmenter
             }
             return segments;
         }
+
+        public override bool Equals(object obj)
+        {
+            if (obj == null || GetType() != obj.GetType())
+            {
+                return false;
+            }
+
+            Parent parent = obj as Parent;
+
+            return (parent.Left == Left && parent.Right == Right) || (parent.Right == Left && parent.Left == Right);
+        }
+
+        public override int GetHashCode()
+        {
+            return new Tuple<Segment, Segment>(Left, Right).GetHashCode();
+        }
     }
 }

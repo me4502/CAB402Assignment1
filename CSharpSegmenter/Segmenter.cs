@@ -45,7 +45,7 @@ namespace CSharpSegmenter
                 .Where(coord => !segmentCoordinates.Contains(coord))
                 .Select(GetPixelAt)
                 .Select(FindRoot)
-                .Where(x => x != segment)
+                .Where(x => !x.Equals(segment))
                 .Distinct()
                 .ToList();
         }
@@ -71,7 +71,7 @@ namespace CSharpSegmenter
             var queue = new Queue<Coordinate>();
             var changed = false;
             queue.Enqueue(coord);
-            while (queue.Count > 0)
+            while (queue.Count > 0 && !changed)
             {
                 var coordinate = queue.Dequeue();
                 var rootSegment = FindRoot(GetPixelAt(coordinate));
@@ -86,6 +86,7 @@ namespace CSharpSegmenter
                         segmentation.Add(rootSegment, mutualParent);
                         segmentation.Add(chosenMutualNeighbour, mutualParent);
                         changed = true;
+                        break;
                     }
                     else
                     {

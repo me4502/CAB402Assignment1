@@ -14,5 +14,20 @@ namespace CSharpSegmenter
             this.Coords = coords;
             this.Colour = colour;
         }
+
+        public override bool Equals(object obj)
+        {
+            if (obj == null || GetType() != obj.GetType())
+            {
+                return false;
+            }
+
+            return Coords.Equals((obj as Pixel).Coords);
+        }
+
+        public override int GetHashCode()
+        {
+            return Coords.GetHashCode();
+        }
     }
 }

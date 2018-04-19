@@ -91,9 +91,6 @@ namespace CSharpSegmenter
             for (var y = 0; y < newImage.height; y++)
                 for (var x = 0; x < newImage.width; x++)
                 {
-                    var a = segmenter.Segment(new Coordinate(x, y));
-                    var b = segmenter.Segment(new Coordinate(x - 1, y));
-                    var c = segmenter.Segment(new Coordinate(x, y - 1));
                     if (x == newImage.width - 1 || x == 0 || !segmenter.Segment(new Coordinate(x, y)).Equals(segmenter.Segment(new Coordinate(x - 1, y))) ||
                         y == newImage.height - 1 || y == 0 || !segmenter.Segment(new Coordinate(x, y)).Equals(segmenter.Segment(new Coordinate(x, y - 1))))
                         newImage.setColour(x, y, BLUE);
