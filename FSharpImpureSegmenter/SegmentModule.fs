@@ -19,7 +19,7 @@ let rec transpose = function
     | _ -> []
 
 
-let rec getSegments (segment: Segment) : (Coordinate * Colour) list =
+let getSegments (segment: Segment) : (Coordinate * Colour) list =
     let output = new ResizeArray<(Coordinate * Colour)>()
     let searchQueue = new Queue<Segment>()
     searchQueue.Enqueue(segment)
