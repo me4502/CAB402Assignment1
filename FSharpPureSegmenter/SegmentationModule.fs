@@ -12,13 +12,6 @@ let rec findRoot (segmentation: Segmentation) segment : Segment =
     | Some(parentSegment: Segment) -> findRoot segmentation parentSegment
     | None -> segment
 
-let rec getTree (segmentation: Segmentation) segment : Segment list =
-    seq {
-        match segmentation.TryFind(segment) with
-        | Some(parentSegment: Segment) -> yield! getTree segmentation parentSegment
-        | None -> yield segment
-    } |> Seq.toList
-
 // Initially, every pixel/coordinate in the image is a separate Segment
 // Note: this is a higher order function which given an image, 
 // returns a function which maps each coordinate to its corresponding (initial) Segment (of kind Pixel)

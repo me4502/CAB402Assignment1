@@ -2,22 +2,17 @@
 
 open SegmentModule
 open TiffModule
+open System.Collections.Generic
 
 // Maps segments to their immediate parent segment that they are contained within (if any) 
-type Segmentation = Map<Segment, Segment>
+type Segmentation = Dictionary<Segment, Segment>
 
 // Find the largest/top level segment that the given segment is a part of (based on the current segmentation)
 let rec findRoot (segmentation: Segmentation) segment : Segment =
-    match segmentation.TryFind(segment) with
-    | Some(parentSegment: Segment) -> findRoot segmentation parentSegment
-    | None -> segment
-
-let rec getTree (segmentation: Segmentation) segment : Segment list =
-    seq {
-        match segmentation.TryFind(segment) with
-        | Some(parentSegment: Segment) -> yield! getTree segmentation parentSegment
-        | None -> yield segment
-    } |> Seq.toList
+    if segmentation.ContainsKey(segment) then
+        findRoot segmentation (segmentation.GetValueOrDefault segment)
+    else
+        segment
 
 // Initially, every pixel/coordinate in the image is a separate Segment
 // Note: this is a higher order function which given an image, 
@@ -85,7 +80,9 @@ let createTryGrowOneSegmentFunction (bestNeighbours:Segmentation->Segment->Set<S
                 else
                     let chosenMutualNeighbour = Seq.head mutualBestNeighbour
                     let mutualParent = Parent(rootSegment, chosenMutualNeighbour)
-                    segmentation.Add(rootSegment, mutualParent).Add(chosenMutualNeighbour, mutualParent)
+                    segmentation.Add(rootSegment, mutualParent)
+                    segmentation.Add(chosenMutualNeighbour, mutualParent)
+                    segmentation
         tryGrowOneSegmentFunction
     tryGrowOneSegmentFunctionOuter
 
@@ -111,7 +108,7 @@ let createGrowUntilNoChangeFunction (tryGrowAllCoordinates:Segmentation->Segment
 
 // Segment the given image based on the given merge cost threshold, but only for the top left corner of the image of size (2^N x 2^N)
 let segment (image:TiffModule.Image) (N: int) (threshold:float)  : (Coordinate -> Segment) =
-    let segmentation = Map.empty
+    let segmentation = new Dictionary<Segment, Segment>();
     let pixelMap = createPixelMap image
     let neighbourFunction = createNeighboursFunction pixelMap N
     let bestNeighboursFunction = createBestNeighbourFunction neighbourFunction threshold

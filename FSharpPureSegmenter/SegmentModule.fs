@@ -17,34 +17,22 @@ let rec transpose = function
     | _ -> []
 
 
-let rec getSegments (segment: Segment) : Segment list =
+let rec getSegments (segment: Segment) : (Coordinate * Colour) list =
     seq {
         match segment with
         | Parent(parent1, parent2) -> 
             yield! getSegments parent1
             yield! getSegments parent2
-        | Pixel(coordinate, colour) -> yield segment
+        | Pixel(coordinate, colour) -> yield (coordinate, colour)
     } |> Seq.toList    
 
 
 let rec getColours (segment: Segment) : float list list =
-    seq {
-        match segment with
-        | Parent(parent1, parent2) -> 
-            yield! getColours parent1
-            yield! getColours parent2
-        | Pixel(coordinate, colour) -> yield (colour |> List.map float)
-    } |> Seq.toList    
+    getSegments segment |> List.map snd |> List.map (List.map float)
 
 
 let rec getCoordinates (segment: Segment) : Coordinate list =
-    seq {
-        match segment with
-        | Parent(parent1, parent2) -> 
-            yield! getCoordinates parent1
-            yield! getCoordinates parent2
-        | Pixel(coordinate, colour) -> yield coordinate
-    } |> Seq.toList    
+    getSegments segment |> List.map fst  
 
 
 // return a list of the standard deviations of the pixel colours in the given segment
